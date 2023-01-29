@@ -37,8 +37,8 @@ public:
     void sql_pool();
     void log_write();
     void trig_mode();
-    void eventListen();
-    void eventLoop();
+    void event_listen();
+    void event_loop();
     void timer(int connfd, struct sockaddr_in client_address);
     void adjust_timer(util_timer *timer);
     void deal_timer(util_timer *timer, int sockfd);
@@ -49,35 +49,35 @@ public:
 
 public:
     // basics
-    char *m_root;
-    int m_port;
-    int m_log_write;
-    int m_close_log;
-    int m_actormodel;
+    char *root;
+    int port;
+    int log_write;
+    int close_log;
+    int actormodel;
 
-    int m_pipefd[2];
-    int m_epollfd;
+    int pipefd[2];
+    int epollfd;
     http_conn *users;
 
     // database
-    connection_pool *m_connPool;
-    string m_users;
-    string m_password;
-    string m_database_name;
-    int m_sql_num;
+    connection_pool *conn_pool;
+    string user;
+    string password;
+    string database_name;
+    int sql_num;
 
     // threadpool
-    threadpool<http_conn> *m_pool;
-    int m_thread_num;
+    threadpool<http_conn> *pool;
+    int thread_num;
 
     // epoll_event
     epoll_event events[MAX_EVENT_NUMBER];
 
-    int m_listenfd;
-    int m_OPT_LINGER;
-    int m_TRIGMode;
-    int m_LISTENTrigmode;
-    int m_CONNTrigmode;
+    int listenfd;
+    int OPT_LINGER;
+    int trigger_mode;
+    int listen_trigger_mode;
+    int connect_trigger_mode;
 
     // timer
     client_data *users_timer;
