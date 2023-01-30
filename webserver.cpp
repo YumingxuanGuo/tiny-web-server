@@ -92,20 +92,51 @@ void WebServer::thread_pool() {
 }
 
 void WebServer::event_listen() {
-    // listenfd = socket(PF_INET, SOCK_STREAM, 0);
-    // assert(listenfd >= 0);
+    listenfd = socket(PF_INET, SOCK_STREAM, 0);
+    assert(listenfd >= 0);
 
-    // if (OPT_LINGER == 0) {
-    //     struct linger opt_val = {0, 1};
-    //     setsockopt(listenfd, SOL_SOCKET, SO_LINGER, &opt_val, sizeof(opt_val));
-    // } else if (OPT_LINGER == 1) {
-    //     struct linger opt_val = {1, 1};
-    //     setsockopt(listenfd, SOL_SOCKET, SO_LINGER, &opt_val, sizeof(opt_val));
-    // }
+    if (OPT_LINGER == 0) {
+        struct linger opt_val = {0, 1};
+        setsockopt(listenfd, SOL_SOCKET, SO_LINGER, &opt_val, sizeof(opt_val));
+    } else if (OPT_LINGER == 1) {
+        struct linger opt_val = {1, 1};
+        setsockopt(listenfd, SOL_SOCKET, SO_LINGER, &opt_val, sizeof(opt_val));
+    }
 
-    // int ret = 0;
-    // struct sockaddr_in address;
-    // memset(&address, 0, sizeof(address));
-    // address.sin_family = AF_INET;
+    int ret = 0;
+    struct sockaddr_in address;
+    memset(&address, 0, sizeof(address));
+    address.sin_family = AF_INET;                 // match the socket() call
+    address.sin_addr.s_addr = htonl(INADDR_ANY);  // bind to any local address
+    address.sin_port = htons(port);               // specify port to listen on
 
+    int flag = 1;
+    setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
+    ret = bind(listenfd, (struct sockaddr*) &address, sizeof(address));
+    assert(ret >= 0);
+    ret = listen(listenfd, 5);
+    assert(ret >= 0);
+
+    utils.init(TIMESLOT);
+
+    epoll_event events[MAX_EVENT_NUMBER];
+    epollfd = epoll_create(5);
+    assert(epollfd != -1);
+
+    utils.addfd(epollfd, listenfd, false, listen_trigger_mode);
+    http_conn::epollfd = epollfd;
+
+    ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd);
+    assert(ret != -1);
+    utils.setnonblocking(pipefd[1]);
+    utils.addfd(epollfd, pipefd[0], false, 0);
+
+    utils.addsig(SIGPIPE, SIG_IGN);
+    utils.addsig(SIGALRM, utils.sig_handler, false);
+    utils.addsig(SIGTERM, utils.sig_handler, false);
+
+    alarm(TIMESLOT);
+
+    Utils::pipefd = pipefd;
+    Utils::epollfd = epollfd;
 }
