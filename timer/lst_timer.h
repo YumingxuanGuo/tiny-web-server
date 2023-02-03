@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
-// #include <sys/epoll.h>
+#include <sys/epoll.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -21,6 +21,7 @@
 #include <sys/wait.h>
 #include <sys/uio.h>
 #include <time.h>
+#include "../log/log.h"
 
 class util_timer;
 
@@ -65,7 +66,25 @@ public:
     Utils() {}
     ~Utils() {}
 
-    
+    void init(int timeslot);
+
+    int setnonblocking(int fd);
+
+    void addfd(int epollfd, int fd, bool one_shot, int trigger_mode);
+
+    static void sig_handler(int sig);
+
+    void addsig(int sig, void(handler)(int), bool restart = true);
+
+    void timer_handler();
+
+    void show_error(int connectfd, const char *info);
+
+public:
+    static int *pipefd;
+    sort_timer_lst timer_lst;
+    static int epollfd;
+    int TIMESLOT;
 };
 
 void cb_func(client_data *user_data);

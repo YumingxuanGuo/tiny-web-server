@@ -41,7 +41,7 @@ public:
     void event_loop();
     void timer(int connfd, struct sockaddr_in client_address);
     void adjust_timer(util_timer *timer);
-    void deal_timer(util_timer *timer, int sockfd);
+    void process_timer(util_timer *timer, int sockfd);
     bool process_client_data();
     bool process_signal(bool &timeout, bool &stop_server);
     void process_read(int sockfd);

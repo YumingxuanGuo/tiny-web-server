@@ -140,3 +140,47 @@ void WebServer::event_listen() {
     Utils::pipefd = pipefd;
     Utils::epollfd = epollfd;
 }
+
+void WebServer::event_loop() {
+    bool timeout = false;
+    bool stop_server = false;
+
+    while (!stop_server) {
+        int number = epoll_wait(epollfd, events, MAX_EVENT_NUMBER, -1);
+        if (number < 0 && errno != EINTR) {
+            LOG_ERROR("%s", "epoll failure");
+            break;
+        }
+
+        for (int i = 0; i < number; i++) {
+            int sockfd = events[i].data.fd;
+
+            if (sockfd == listenfd) {
+                // new client connection
+                if (process_client_data() == false) {
+                    continue;
+                }
+            } else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
+                // disconnect; remove corresponding timer
+                util_timer *timer = users_timer[sockfd].timer;
+                process_timer(timer, sockfd);
+            } else if ((sockfd == pipefd[0]) && (events[i].events & EPOLLIN)) {
+                // process signal
+                if (process_signal(timeout, stop_server) == false) {
+                    LOG_ERROR("%s", "process_signal failure");
+                }
+            } else if (events[i].events & EPOLLIN) {
+                // process data
+                process_read(sockfd);
+            } else if (events[i].events & EPOLLOUT) {
+                process_write(sockfd);
+            }
+        }
+
+        if (timeout) {
+            utils.timer_handler();
+            LOG_INFO("%s", "timer tick");
+            timeout = false;
+        }
+    }
+}
