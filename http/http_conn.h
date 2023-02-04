@@ -68,7 +68,8 @@ public:
     http_conn() {}
     ~http_conn() {}
 
-    void initinit(int sockfd, const sockaddr_in &addr, char *, int, int, string user, string passwd, string sqlname);
+public:
+    void init(int sockfd, const sockaddr_in &addr, char *, int, int, string user, string passwd, string sqlname);
     void close_conn(bool real_close = true);
     void process();
     bool read_once();
@@ -76,8 +77,8 @@ public:
     sockaddr_in *get_address() { return &address; }
     void init_mysql_result(connection_pool *conn_pool);
 
-    int timer_flag;
-    int inprov;
+    int timer_flag_;
+    int improv_;
 
 private:
     void init();
@@ -100,45 +101,45 @@ private:
     bool add_blank_line();
 
 public:
-    static int epollfd;
-    static int user_count;
-    MYSQL *mysql;
-    int state;  // 0 for read, 1 for write
+    static int epollfd_;
+    static int user_count_;
+    MYSQL *mysql_;
+    int state_;  // 0 for read, 1 for write
 
 private:
-    int sockfd;
-    sockaddr_in address;
-    char read_buf[READ_BUFFER_SIZE];
-    int read_idx;
-    int checked_idx;
-    int start_line;
-    char write_buf[WRITE_BUFFER_SIZE];
-    int write_idx;
-    CHECK_STATE check_state;
-    METHOD method;
-    char real_file[FILENAME_LEN];
-    char *url;
-    char *version;
-    char *host;
-    int content_lentgh;
-    bool linger;
-    char *file_address;
-    struct stat file_stat;
-    struct iovec iv[2];
-    int iv_count;
-    int cgi;
-    char *string;
-    int bytes_to_send;
-    int bytes_have_sent;
-    char *doc_root;
+    int sockfd_;
+    sockaddr_in address_;
+    char read_buf_[READ_BUFFER_SIZE];
+    int read_idx_;
+    int checked_idx_;
+    int start_line_;
+    char write_buf_[WRITE_BUFFER_SIZE];
+    int write_idx_;
+    CHECK_STATE check_state_;
+    METHOD method_;
+    char real_file_[FILENAME_LEN];
+    char *url_;
+    char *version_;
+    char *host_;
+    int content_lentgh_;
+    bool linger_;
+    char *file_address_;
+    struct stat file_stat_;
+    struct iovec iv_[2];
+    int iv_count_;
+    int cgi_;
+    char *string_;
+    int bytes_to_send_;
+    int bytes_have_sent_;
+    char *doc_root_;
 
-    map<string, string> users;
-    int trigger_mode;
-    int close_log;
+    map<string, string> users_;
+    int trigger_mode_;
+    int close_log_;
 
-    char sql_user[100];
-    char sql_password[100];
-    char sql_name[100];
+    char sql_user_[100];
+    char sql_password_[100];
+    char sql_name_[100];
 };
 
 #endif
